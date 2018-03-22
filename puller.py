@@ -20,18 +20,16 @@ consumer_key = secret['consumer_key']
 consumer_secret = secret['consumer_secret']
 
 
-GRUBER_URLINTEXT_PAT = re.compile(
-    '(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?\xab\xbb\u201c\u201d\u2018\u2019]))')
-
-
 # This is a basic listener that just prints received tweets to stdout.
 def body_cleanup(text):
-    return text.replace('\n', '')
+    URLless_string = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', 'URL', text)
+    YEARless_string = re.sub(r'\s[1-9][0-9][0-9][0-9]\s', ' YEAR ', URLless_string)
+    DIGITless_string = re.sub(r'[0-9]+', 'DIGIT', YEARless_string)
+    return DIGITless_string.replace('\n', '')
 
 
 def preproc(tweet):
     txt = body_cleanup(tweet['text'])
-
     to_prn = json.dumps({'text': txt, 'src': 'twitter'})
     return to_prn
 
