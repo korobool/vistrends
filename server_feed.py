@@ -32,3 +32,6 @@ async def get_feed(request: web_request.Request):
         if obj[time] >= min_time:
             output_data.append(obj)
     return web.Response(body=json.dumps(output_data), content_type="application/json")
+
+app.router.add_get('/feed', get_feed)
+web.run_app(app, host="0.0.0.0", port=9050)
