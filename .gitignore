@@ -103,3 +103,5 @@ ENV/
 # added
 /.idea
 key
+key.pem
+sercet
