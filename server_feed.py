@@ -26,7 +26,10 @@ session = aiohttp.ClientSession()
 app = web.Application()
 
 async def get_feed(request: web_request.Request):
-    min_time = request.query["time"]
+    if "time" in request.query["time"]:
+        min_time = int(request.query["time"])
+    else:
+        min_time = 0
     output_data = []
     for obj in data:
         if obj[time] >= min_time:
