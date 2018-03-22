@@ -7,13 +7,13 @@ import time
 
 data = []
 
-def read_stdin():
+def read_stdin(data=data):
     while True:
         all_input = input()
         for line in all_input.split("\n"):
             obj = json.loads(line.strip())
             obj["time"] = datetime.datetime.now().timestamp()
-            print(obj)
+            data.append(obj)
         obsolete_time = datetime.datetime.now().timestamp() - 120
         while data and data[0]["time"] <= obsolete_time:
             data = data[1:]
