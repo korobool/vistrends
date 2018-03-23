@@ -22,9 +22,11 @@ consumer_secret = secret['consumer_secret']
 
 # This is a basic listener that just prints received tweets to stdout.
 def body_cleanup(text):
-    URLless_string = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', 'URL', text)
+    URLless_string = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', ' URL ', text)
     YEARless_string = re.sub(r'\s[1-9][0-9][0-9][0-9]\s', ' YEAR ', URLless_string)
-    DIGITless_string = re.sub(r'[0-9]+', 'DIGIT', YEARless_string)
+    DIGITless_string = re.sub(r'[0-9]+', ' DIGIT ', YEARless_string)
+    DIGITless_string = re.sub(r'DIGIT-DIGIT', ' RANGE ', DIGITless_string)
+    DIGITless_string = re.sub(r'YEAR-YEAR', ' RANGE ', DIGITless_string)
     return DIGITless_string.replace('\n', '')
 
 
