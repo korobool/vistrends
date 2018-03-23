@@ -27,7 +27,9 @@ def body_cleanup(text):
     DIGITless_string = re.sub(r'[0-9]+', ' DIGIT ', YEARless_string)
     DIGITless_string = re.sub(r'DIGIT-DIGIT', ' RANGE ', DIGITless_string)
     DIGITless_string = re.sub(r'YEAR-YEAR', ' RANGE ', DIGITless_string)
-    return DIGITless_string.replace('\n', '')
+    RTless_string = re.sub('RT @[\w|\s]+:', '', DIGITless_string)
+    USERless_string = re.sub('@[\w|\s]+:', '', RTless_string)
+    return USERless_string.replace('\n', '')
 
 
 def preproc(tweet):
