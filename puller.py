@@ -34,7 +34,14 @@ def body_cleanup(text):
 
 def preproc(tweet):
     txt = body_cleanup(tweet['text'])
-    to_prn = json.dumps({'text': txt, 'src': 'twitter'})
+    data = {'text': txt, 'src': 'twitter'}
+    if 'coordinates' in tweet:
+        data['coordinates'] = tweet['coordinates']
+    if 'place' in tweet:
+        data['place'] = tweet['place']
+    if 'created_at' in tweet:
+        data['created_at'] = tweet['created_at']
+    to_prn = json.dumps(data)
     return to_prn
 
 
@@ -59,3 +66,4 @@ if __name__ == '__main__':
     #
     # # This line filter Twitter Streams to capture data by the keywords: 'python', 'javascript', 'ruby'
     stream.filter(track=['news', 'socialmedia'], languages=['en'])
+
