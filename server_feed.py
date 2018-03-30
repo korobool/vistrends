@@ -1,42 +1,45 @@
 import aiohttp
 from aiohttp import web, web_request
-import threading
 import json
 import datetime
 import sys
+import motor.motor_asyncio
 
-data = []
+if len(sys.argv) != 2:
+    print("You should pass db connection string as arg.")
+dbapi_string = sys.argv[1]
 
-def read_stdin(data=data):
-    while True:
-        line = sys.stdin.readline()
-        if not line:
-            continue
-        obj = json.loads(line)
-        obj["time"] = datetime.datetime.now().timestamp()
-        data.append(obj)
-        print(obj)
-        obsolete_time = datetime.datetime.now().timestamp() - 120
-        while data and data[0]["time"] <= obsolete_time:
-            data = data[1:]
-
-thread = threading.Thread(target=read_stdin, args=())
-thread.daemon = True
-thread.start()
+client = motor.motor_asyncio.AsyncIOMotorClient(dbapi_string)
+db = client['test_database']
 
 session = aiohttp.ClientSession()
 app = web.Application()
 
-async def get_feed(request: web_request.Request):
-    if "time" in request.query:
-        min_time = int(request.query["time"])
+def get_min_max_time(request: web_request.Request, time_min_default, time_min_limit=None):
+    if "min_time" in request.query:
+        query_min_time = int(request.query["min_time"])
+        if time_min_limit:
+            min_time = max(query_min_time, datetime.datetime.now().timestamp() - time_min_limit)
+        else:
+            min_time = query_min_time
     else:
-        min_time = 0
-    output_data = []
-    for obj in data:
-        if obj['time'] >= min_time:
-            output_data.append(obj)
-    return web.Response(body=json.dumps(output_data), content_type="application/json")
+        min_time = datetime.datetime.now().timestamp() - time_min_default
+    if "max_time" in request.query:
+        query_max_time = int(request.query["max_time"])
+        max_time = max(query_max_time, datetime.datetime.now().timestamp())
+    else:
+        max_time = max(datetime.datetime.now().timestamp())
+    return min_time, max_time
 
-app.router.add_get('/feed', get_feed)
+async def get_trends(request: web_request.Request):
+    min_time, max_time = get_min_max_time(request, -86400)
+    docs = await db.test_collection.find_all({'time': {'$gt': min_time, "$lt": max_time}})
+    return web.Response(body=json.dumps(docs), content_type="application/json")
+
+async def get_updates(request: web_request.Request):
+    min_time, max_time = get_min_max_time(request, -120)
+    docs = await db.test_collection.find_all({'time': {'$gt': min_time, "$lt": max_time}})
+    return web.Response(body=json.dumps(docs), content_type="application/json")
+
+app.router.add_get('/feed_updates', get_updates)
 web.run_app(app, host="0.0.0.0", port=9050)
