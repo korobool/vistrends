@@ -7,9 +7,6 @@ from tweepy import Stream
 
 import json
 
-# import pandas as pd
-# import matplotlib.pyplot as plt
-
 # Variables that contains the user credentials to access Twitter API
 with open('sercet') as f:
     secret = json.loads(f.read())
