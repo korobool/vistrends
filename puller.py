@@ -1,11 +1,17 @@
-# Import the necessary methods from tweepy library
+import aiohttp
+import json
+import datetime
+import sys
+import motor.motor_asyncio
+
 import re
 
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
 
-import json
+from config import config
+
 
 # Variables that contains the user credentials to access Twitter API
 with open('sercet') as f:
@@ -41,13 +47,21 @@ def preproc(tweet):
     to_prn = json.dumps(data)
     return to_prn
 
+class Writter(object):
+    def __init__(self, db):
+        self._db = db
+
+    def put(self, data):
+        self.all_tweets.insert(data)
 
 class StdOutListener(StreamListener):
+    writer = None
     def on_data(self, data):
         tweet = json.loads(data)
         if 'text' in tweet:
             item = preproc(tweet)
             print('{}'.format(item))
+
         return True
 
     def on_error(self, status):
@@ -55,11 +69,18 @@ class StdOutListener(StreamListener):
 
 
 if __name__ == '__main__':
-    # This handles Twitter authentication and the connection to Twitter Streaming API
-    l = StdOutListener()
+
+    dbapi_string = config['db']
+    client = motor.motor_asyncio.AsyncIOMotorClient(dbapi_string)
+    # db = client['all_tweets']
+
+    listener = StdOutListener()
+
+
+
     auth = OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
-    stream = Stream(auth, l)
+    stream = Stream(auth, listener)
     #
     # # This line filter Twitter Streams to capture data by the keywords: 'python', 'javascript', 'ruby'
     stream.filter(track=['news', 'socialmedia'], languages=['en'])
