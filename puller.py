@@ -12,7 +12,6 @@ from tweepy import Stream
 
 from config import config
 
-
 # Variables that contains the user credentials to access Twitter API
 with open('sercet') as f:
     secret = json.loads(f.read())
@@ -47,6 +46,7 @@ def preproc(tweet):
     to_prn = json.dumps(data)
     return to_prn
 
+
 class Writter(object):
     def __init__(self, db):
         self._db = db
@@ -54,12 +54,15 @@ class Writter(object):
     def put(self, data):
         self.all_tweets.insert(data)
 
+
 class StdOutListener(StreamListener):
     writer = None
+
     def on_data(self, data):
         tweet = json.loads(data)
         if 'text' in tweet:
             item = preproc(tweet)
+            self.writer.put(item)
             print('{}'.format(item))
 
         return True
@@ -69,14 +72,12 @@ class StdOutListener(StreamListener):
 
 
 if __name__ == '__main__':
-
     dbapi_string = config['db']
     client = motor.motor_asyncio.AsyncIOMotorClient(dbapi_string)
-    # db = client['all_tweets']
+    db = client['all_tweets']
 
     listener = StdOutListener()
-
-
+    listener.writer = Writter(db)
 
     auth = OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
@@ -84,4 +85,3 @@ if __name__ == '__main__':
     #
     # # This line filter Twitter Streams to capture data by the keywords: 'python', 'javascript', 'ruby'
     stream.filter(track=['news', 'socialmedia'], languages=['en'])
-
