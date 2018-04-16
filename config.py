@@ -1,3 +1,3 @@
 config = {
-    'db': 'TODO: put here a mongo connection string'
+    'db': 'mongodb://localhost:27017'
 }

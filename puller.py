@@ -3,17 +3,19 @@ import json
 import datetime
 import sys
 import motor.motor_asyncio
-
+import time
 import re
+import asyncio
 
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
+from datetime import datetime
 
 from config import config
 
 # Variables that contains the user credentials to access Twitter API
-with open('sercet') as f:
+with open('secret') as f:
     secret = json.loads(f.read())
 
 access_token = secret['access_token']
@@ -42,29 +44,24 @@ def preproc(tweet):
     if 'place' in tweet:
         data['place'] = tweet['place']
     if 'created_at' in tweet:
-        data['created_at'] = tweet['created_at']
+        # data['created_at'] = tweet['created_at']
+        time_struct = time.strptime(tweet['created_at'], "%a %b %d %H:%M:%S +0000 %Y")
+        data['created_at'] = time.mktime(time_struct)
     to_prn = json.dumps(data)
-    return to_prn
-
-
-class Writter(object):
-    def __init__(self, db):
-        self._db = db
-
-    def put(self, data):
-        self.all_tweets.insert(data)
+    return to_prn, data
 
 
 class StdOutListener(StreamListener):
-    writer = None
+
+    def __init__(self, db):
+        self._db = db
 
     def on_data(self, data):
         tweet = json.loads(data)
         if 'text' in tweet:
-            item = preproc(tweet)
-            self.writer.put(item)
-            print('{}'.format(item))
-
+            for_print, for_db = preproc(tweet)
+            print(for_print)
+            self._db.all_tweets.insert_one(for_db)
         return True
 
     def on_error(self, status):
@@ -74,14 +71,15 @@ class StdOutListener(StreamListener):
 if __name__ == '__main__':
     dbapi_string = config['db']
     client = motor.motor_asyncio.AsyncIOMotorClient(dbapi_string)
-    db = client['all_tweets']
+    db = client.analytics
+    # print(db)
 
-    listener = StdOutListener()
-    listener.writer = Writter(db)
+    listener = StdOutListener(db)
+    # listener.writer = Writter(db)
 
     auth = OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
     stream = Stream(auth, listener)
-    #
-    # # This line filter Twitter Streams to capture data by the keywords: 'python', 'javascript', 'ruby'
+
+    # This line filter Twitter Streams to capture data by the keywords: 'python', 'javascript', 'ruby'
     stream.filter(track=['news', 'socialmedia'], languages=['en'])
