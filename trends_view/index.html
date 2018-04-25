@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.axis--x path {
+  display: none;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 8px;
+}
+
+</style>
+<svg width="960" height="500"></svg>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script>
+
+var t = d3.transition()
+    .duration(500);
+
+var svg = d3.select("svg"),
+    margin = {top: 20, right: 80, bottom: 30, left: 50},
+    width = svg.attr("width") - margin.left - margin.right,
+    height = svg.attr("height") - margin.top - margin.bottom,
+    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var parseTime = d3.timeParse("%Y%m%d");
+
+var x = d3.scaleTime().range([0, width]),
+    y = d3.scaleLinear().range([height, 0]),
+    z = d3.scaleOrdinal(d3.schemeCategory10);
+
+var line = d3.line()
+    .curve(d3.curveBasis)
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.value); });
+
+var trend;
+var pp_trends = {};  // preprocessing trends
+var dates = [];
+var trends = [];
+
+var x_axis = g.append("g")
+  .attr("class", "axis axis--x")
+  .attr("transform", "translate(0," + height + ")");
+
+function update(filename) {
+  d3.json(filename).then(function(data) {
+    pp_trends = {};  // preprocessing trends
+    dates = [];
+    trends = [];
+
+    data.forEach(function(d) {
+      d.datapoints.forEach(function(trend) {
+        if (!(trend.name in pp_trends)) {
+          pp_trends[trend.name] = []
+        }
+        pp_trends[trend.name].push({date: new Date(parseInt(d.time)), value: trend.value});
+      });
+      dates.push(new Date(parseInt(d.time)));
+    });
+
+    Object.keys(pp_trends).forEach(function(key) {
+      trends.push({id: key, values: pp_trends[key]});
+    });
+
+    x.domain(d3.extent(dates, function(date) { return date; }));
+
+    y.domain([
+      d3.min(trends, function(c) { return d3.min(c.values, function(d) { return d.value; }); }),
+      d3.max(trends, function(c) { return d3.max(c.values, function(d) { return d.value; }); })
+    ]);
+
+    z.domain(trends.map(function(c) { return c.id; }));
+
+    // x_axis.call(d3.axisBottom(x));
+
+    // g.append("g")
+    //     .attr("class", "axis axis--y")
+    //     .call(d3.axisLeft(y))
+    //   .append("text")
+    //     .attr("transform", "rotate(-90)")
+    //     .attr("y", 6)
+    //     .attr("dy", "0.71em")
+    //     .attr("fill", "#000")
+    //     .text("Trend");
+
+    // // z axe
+    // var trend = g.selectAll(".trend")
+    //   .data(trends)
+    //   .enter().append("g")
+    //     .attr("class", "trend");
+    //
+    // trend.append("path")
+    //     .attr("class", "line")
+    //     .attr("d", function(d) { return line(d.values); })
+    //     .style("stroke", function(d) { return z(d.id); });
+    //
+    // trend.append("text")
+    //     .datum(function(d) { return {id: d.id, value: d.values[d.values.length - 1]}; })
+    //     .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.value) + ")"; })
+    //     .attr("x", 3)
+    //     .attr("dy", "0.35em")
+    //     .style("font", "10px sans-serif")
+    //     .text(function(d) { return d.id; });
+
+    // trend = g.selectAll("path")
+    var trend = g.selectAll(".trend")
+      .data(trends, function(d) { return d.id; })
+      .enter().append("g")
+        .attr("class", "trend");
+
+    trend.exit().remove();
+
+    trend.append("path")
+        // .attr("class", "trend")
+      // .merge(trend)
+          .attr("class", "line")
+          .attr("d", function(d) { return line(d.values); })
+          .style("stroke", function(d) { return z(d.id); });
+
+    trend.exit().remove();
+
+    trend.append("text")
+        .datum(function(d) { return {id: d.id, value: d.values[d.values.length - 1]}; })
+        .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.value) + ")"; })
+        .attr("x", 3)
+        .attr("dy", "0.35em")
+        .style("font", "10px sans-serif")
+        .text(function(d) { return d.id; });
+
+  });
+}
+
+
+update('example0.json');
+
+d3.timeout(function() {
+  update('example1.json');
+}, 1000);
+d3.timeout(function() {
+  update('example2.json');
+}, 2000);
+d3.timeout(function() {
+  update('example3.json');
+}, 3000);
+d3.timeout(function() {
+  update('example4.json');
+}, 4000);
+d3.timeout(function() {
+  update('example5.json');
+}, 5000);
+
+</script>
