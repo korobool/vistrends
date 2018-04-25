@@ -1,3 +1,4 @@
 config = {
-    'db': 'mongodb://localhost:27017'
+    'db': 'mongodb://admin:fend183Er@localhost:27017/tracking?authSource=admin',
+    'img_path': 'img'
 }

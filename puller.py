@@ -44,9 +44,8 @@ def preproc(tweet):
     if 'place' in tweet:
         data['place'] = tweet['place']
     if 'created_at' in tweet:
-        # data['created_at'] = tweet['created_at']
         time_struct = time.strptime(tweet['created_at'], "%a %b %d %H:%M:%S +0000 %Y")
-        data['created_at'] = time.mktime(time_struct)
+        data['created_at'] = int(time.mktime(time_struct))
     to_prn = json.dumps(data)
     return to_prn, data
 
@@ -68,18 +67,21 @@ class StdOutListener(StreamListener):
         print(status)
 
 
-if __name__ == '__main__':
-    dbapi_string = config['db']
-    client = motor.motor_asyncio.AsyncIOMotorClient(dbapi_string)
-    db = client.analytics
-    # print(db)
-
+def run(db):
     listener = StdOutListener(db)
-    # listener.writer = Writter(db)
-
     auth = OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
     stream = Stream(auth, listener)
 
     # This line filter Twitter Streams to capture data by the keywords: 'python', 'javascript', 'ruby'
     stream.filter(track=['news', 'socialmedia'], languages=['en'])
+
+if __name__ == '__main__':
+    dbapi_string = config['db']
+    client = motor.motor_asyncio.AsyncIOMotorClient(dbapi_string)
+    db = client.analytics
+
+    try:
+        run(db)
+    except:
+        pass
