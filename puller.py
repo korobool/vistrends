@@ -74,7 +74,8 @@ def run(db):
     stream = Stream(auth, listener)
 
     # This line filter Twitter Streams to capture data by the keywords: 'python', 'javascript', 'ruby'
-    stream.filter(track=['news', 'socialmedia'], languages=['en'])
+    stream.filter(track=config['tags'], languages=['en'])
+
 
 if __name__ == '__main__':
     dbapi_string = config['db']

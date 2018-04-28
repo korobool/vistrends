@@ -10,6 +10,7 @@ from io import BytesIO
 from config import config
 
 dbapi_string = config['db']
+port = config['serving_at']
 client = motor.motor_asyncio.AsyncIOMotorClient(dbapi_string)
 db = client.analytics
 
@@ -45,7 +46,7 @@ async def handler_image(request):
 
 async def init(loop):
     handler = app.make_handler()
-    srv = await loop.create_server(handler, '0.0.0.0', 8080)
+    srv = await loop.create_server(handler, '0.0.0.0', port)
     print('serving on', srv.sockets[0].getsockname())
     return srv
 
