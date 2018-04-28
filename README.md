@@ -81,15 +81,15 @@ python server.py
 
 One element from bd.
 ```terminal
-curl "http://localhost:8080/single?time=1524698967" | grep }| python -mjson.tool
+curl "http://localhost:11071/single?time=1524698967" | grep }| python -mjson.tool
 ```
 
 Elements for some period.
 ```terminal
-curl "http://localhost:8080?time_min=1524660000&time_max=1524700000" | grep }| python -mjson.tool
+curl "http://localhost:11071?time_min=1524660000&time_max=1524700000" | grep }| python -mjson.tool
 ```
 
 Get image by file name.
 ```terminal
-curl "http://localhost:8080/image?img=17:20:51_25.04.2018.png"
+curl "http://localhost:11071/image?img=17:20:51_25.04.2018.png"
 ```
