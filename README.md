@@ -51,18 +51,27 @@ Create directory 'img' for images.
 ```
 make start
 ```
+you can stop everything with 
+```
+make stop
+```
+or check the status/control by
+```
+make ctl
+```
+
 ##### To run software separately:
-Run puller forever.
+* Run puller forever.
 ```terminal
 python puller.py
 ```
 
-Run extractor once per some time period (for example, hour) by cron.
+* Run extractor once per some time period (for example, hour) by cron.
 ```terminal
 python extractor.py
 ```
 
-Run server forever.
+* Run server forever.
 ```terminal
 python server.py
 ```
