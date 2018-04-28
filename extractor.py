@@ -80,7 +80,7 @@ if __name__ == '__main__':
     t = '{0}.{1}'.format(time.strftime("%H:%M:%S_%d.%m.%Y"), 'png')
     wordcloud.to_file(path.join(d, config['img_path'], t))
 
-    items = list(wordcloud.words_.items()) # [:config['threshold']]
+    items = list(wordcloud.words_.items())
 
     items = sorted(items, key=lambda item: item[1], reverse=True)
     items = [{'name': x, 'value': y} for x, y in items if y >= config['threshold']]

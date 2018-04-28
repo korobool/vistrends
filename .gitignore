@@ -104,4 +104,4 @@ ENV/
 /.idea
 key
 key.pem
-sercet
+secret
