@@ -1,20 +1,17 @@
-import sys
-import time
-import datetime
-import pprint
 import asyncio
-import motor.motor_asyncio
+import datetime
 import re
-import matplotlib.pyplot as plt
-import numpy as np
-
-from pprint import pprint
+import sys
 from os import path
-from wordcloud import WordCloud
-from wordcloud import WordCloud, STOPWORDS
+
+import motor.motor_asyncio
+import numpy as np
+import time
 from PIL import Image
+from wordcloud import WordCloud, STOPWORDS
 
 from config import config
+from entities_parser import get_joined_entities, get_entities
 
 dbapi_string = config['db']
 client = motor.motor_asyncio.AsyncIOMotorClient(dbapi_string)
@@ -44,6 +41,7 @@ async def do_find(val1, val2):
         docs.append(document['text'])
     return docs
 
+
 if __name__ == '__main__':
     current_time = int(time.time())
     dt = datetime.datetime.fromtimestamp(current_time) - datetime.timedelta(days=1)
@@ -65,10 +63,16 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     data = loop.run_until_complete(do_find(val1, val2))
     filtered = [body_cleanup(item).lower() for item in data]
-    filtered_unique = list(set(filtered))
-    filtered = filtered_unique
+    if config['unique'] == 'yes':
+        filtered_unique = list(set(filtered))
+        filtered = filtered_unique
+    if config['entities_only'] == 'yes':
+        entities_only = [' '.join(get_entities(item)) for item in filtered]
+        filtered = entities_only
+    print(filtered)
     full_text = ' '.join(filtered)
     text = full_text
+
 
     # Generate a word cloud image
     d = path.dirname(__file__)

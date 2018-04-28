@@ -8,12 +8,13 @@ mkvirtualenv -p python3.6 analytics
 ```
 
 #### requirements
-
 ```terminal
 pip install -r requirements.txt
 sudo apt-get install python3-tk
+python -m nltk.downloader all
 sudo pip2 install supervisor
 ```
+
 #### MongoDB 
 Install MongoDB on Ubuntu 16.04 (Step1-Step4)
 https://www.howtoforge.com/tutorial/install-mongodb-on-ubuntu-16.04/
@@ -82,6 +83,7 @@ One element from bd.
 ```terminal
 curl "http://localhost:8080/single?time=1524698967" | grep }| python -mjson.tool
 ```
+
 Elements for some period.
 ```terminal
 curl "http://localhost:8080?time_min=1524660000&time_max=1524700000" | grep }| python -mjson.tool
