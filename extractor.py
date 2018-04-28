@@ -49,9 +49,7 @@ if __name__ == '__main__':
     dt = datetime.datetime.fromtimestamp(current_time) - datetime.timedelta(days=1)
     previous_time = int(time.mktime(dt.timetuple()))
 
-    # print(previous_time, current_time)
-
-    if len(sys.argv) == 2:
+    if len(sys.argv) == 3:
         try:
             val1 = int(sys.argv[1])
             val2 = int(sys.argv[2])
@@ -75,16 +73,18 @@ if __name__ == '__main__':
     cloud_mask = np.array(Image.open(path.join(d, "cloud_mask.png")))
     wordcloud = WordCloud(background_color="white", max_words=2000,
                           mask=cloud_mask, stopwords=stopwords)
-    wordcloud.generate(text)
+    try:
+        wordcloud.generate(text)
 
-    t = '{0}.{1}'.format(time.strftime("%H:%M:%S_%d.%m.%Y"), 'png')
-    wordcloud.to_file(path.join(d, config['img_path'], t))
+        t = '{0}.{1}'.format(time.strftime("%H:%M:%S_%d.%m.%Y"), 'png')
+        wordcloud.to_file(path.join(d, config['img_path'], t))
 
-    items = list(wordcloud.words_.items())
+        items = list(wordcloud.words_.items())
 
-    items = sorted(items, key=lambda item: item[1], reverse=True)
-    items = [{'name': x, 'value': y} for x, y in items if y >= config['threshold']]
+        items = sorted(items, key=lambda item: item[1], reverse=True)
+        items = [{'name': x, 'value': y} for x, y in items if y >= config['threshold']]
 
-    for_db = {'time': current_time, 'datapoints': items, 'img': t}
-    db.points.insert_one(for_db)
-
+        for_db = {'time': current_time, 'datapoints': items, 'img': t}
+        db.points.insert_one(for_db)
+    except ValueError:
+        print('It seems the list of words is empty!')
