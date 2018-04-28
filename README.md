@@ -11,6 +11,8 @@ mkvirtualenv -p python3.6 analytics
 
 ```terminal
 pip install -r requirements.txt
+sudo apt-get install python3-tk
+sudo pip2 install supervisor
 ```
 #### MongoDB 
 Install MongoDB on Ubuntu 16.04 (Step1-Step4)
@@ -45,7 +47,11 @@ use analytics
 Create directory 'img' for images.
 
 #### Run software
-
+##### To run altogether:
+```
+make start
+```
+##### To run software separately:
 Run puller forever.
 ```terminal
 python puller.py
