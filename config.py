@@ -4,6 +4,6 @@ config = {
     'serving_at': 11071,
     'threshold': 0.25,
     'tags': ['#news'],  # ['#socialmedia', '#BreakingNews', '#trending']
-    'unique': 'yes',
+    'unique': 'no',
     'entities_only': 'yes'
 }

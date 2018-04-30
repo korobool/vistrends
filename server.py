@@ -14,6 +14,7 @@ port = config['serving_at']
 client = motor.motor_asyncio.AsyncIOMotorClient(dbapi_string)
 db = client.analytics
 
+
 async def handler(request):
     val1 = int(request.rel_url.query['time_min'])
     val2 = int(request.rel_url.query['time_max'])
@@ -21,9 +22,12 @@ async def handler(request):
     docs = []
     cursor = db.points.find({'time': {'$gt': val1, '$lt': val2}})
     for document in await cursor.to_list(length=50000):
-        docs.append(document['datapoints'])
+        docs.append({'time': document['time'],
+                     'datapoins': document['datapoints'],
+                     'img_path': document['img']})
     response.text = json.dumps(docs)
     return response
+
 
 async def handler_single(request):
     val = int(request.rel_url.query['time'])
@@ -33,6 +37,7 @@ async def handler_single(request):
                                 'datapoins': document['datapoints'],
                                 'img_path': document['img']})
     return response
+
 
 async def handler_image(request):
     t = str(request.rel_url.query['img'])
@@ -44,11 +49,13 @@ async def handler_image(request):
     response = web.Response(body=im, content_type='image/png')
     return response
 
+
 async def init(loop):
     handler = app.make_handler()
     srv = await loop.create_server(handler, '0.0.0.0', port)
     print('serving on', srv.sockets[0].getsockname())
     return srv
+
 
 d = path.dirname(__file__)
 loop = asyncio.get_event_loop()
