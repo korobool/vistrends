@@ -2,11 +2,13 @@ import asyncio
 import datetime
 import re
 import sys
-from os import path
+import logging
 
 import motor.motor_asyncio
 import numpy as np
 import time
+
+from os import path
 from PIL import Image
 from wordcloud import WordCloud, STOPWORDS
 
@@ -20,6 +22,9 @@ stopwords = set(STOPWORDS)
 stopwords.update(['fake', 'much', 'good', 'great', 'will', 'should', 'amp', 'now', 'say', 'says', 'said',
                   'new', 'day', 'one', 'well', 'want', 'us', 'today', 'via', 'year', 'need', 'read',
                   'thank', 'news', 'latest'])
+logging.basicConfig(filename=path.join(config['log_path'], "extractor.log"),
+                    level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 def body_cleanup(text):
     URLless_string = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '', text)
@@ -41,8 +46,8 @@ async def do_find(val1, val2):
         docs.append(document['text'])
     return docs
 
-
 if __name__ == '__main__':
+    logging.info('Extractor started.')
     current_time = int(time.time())
     dt = datetime.datetime.fromtimestamp(current_time) - datetime.timedelta(days=1)
     previous_time = int(time.mktime(dt.timetuple()))
@@ -67,7 +72,7 @@ if __name__ == '__main__':
     if config['entities_only'] == 'yes':
         entities_only = [' '.join(get_entities(item)) for item in filtered]
         filtered = entities_only
-    print(filtered)
+    # print(filtered)
     full_text = ' '.join(filtered)
     text = full_text
 
@@ -90,5 +95,9 @@ if __name__ == '__main__':
 
         for_db = {'time': current_time, 'datapoints': items, 'img': t}
         db.points.insert_one(for_db)
+        logging.info('Write to database.')
     except ValueError:
+        logging.error('ValueError. It seems the list of words is empty!')
         print('It seems the list of words is empty!')
+
+    logging.info('Extractor finished.\n')

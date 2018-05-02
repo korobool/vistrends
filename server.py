@@ -2,7 +2,9 @@ import json
 import asyncio
 import aiohttp
 import motor.motor_asyncio
+import logging
 
+from os import path
 from aiohttp import web
 from os import path
 from PIL import Image
@@ -14,8 +16,12 @@ port = config['serving_at']
 client = motor.motor_asyncio.AsyncIOMotorClient(dbapi_string)
 db = client.analytics
 
+logging.basicConfig(filename=path.join(config['log_path'], "server.log"),
+                    level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 async def handler(request):
+    logging.info('Multiple response.')
     val1 = int(request.rel_url.query['time_min'])
     val2 = int(request.rel_url.query['time_max'])
     response = web.Response(content_type='application/json')
@@ -30,6 +36,7 @@ async def handler(request):
 
 
 async def handler_single(request):
+    logging.info('Single response.')
     val = int(request.rel_url.query['time'])
     response = web.Response(content_type='application/json')
     document = await db.points.find_one({'time': val})
@@ -40,6 +47,7 @@ async def handler_single(request):
 
 
 async def handler_image(request):
+    logging.info('Image response.')
     t = str(request.rel_url.query['img'])
     img_path = path.join(d, config['img_path'], t)
     with BytesIO() as output:
@@ -53,7 +61,9 @@ async def handler_image(request):
 async def init(loop):
     handler = app.make_handler()
     srv = await loop.create_server(handler, '0.0.0.0', port)
-    print('serving on', srv.sockets[0].getsockname())
+    sock = srv.sockets[0].getsockname()
+    print('Serving on', sock)
+    logging.info('Server started on ' + str(sock))
     return srv
 
 
@@ -70,3 +80,5 @@ if __name__ == '__main__':
         loop.run_forever()
     except KeyboardInterrupt:
         pass
+
+    logging.info('Server stopped.\n')
