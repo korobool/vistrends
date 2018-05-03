@@ -46,6 +46,17 @@ var x_axis = g.append("g")
   .attr("class", "axis axis--x")
   .attr("transform", "translate(0," + height + ")");
 
+var y_axis = g.append("g")
+    .attr("class", "axis axis--y");
+
+y_axis.append("text")
+  .attr("transform", "rotate(-90)")
+  .attr("y", 6)
+  .attr("dy", "0.71em")
+  .attr("fill", "#000")
+  .style('font-size', '12px')
+  .text("Trend");
+
 function update(filename) {
   d3.json(filename).then(function(data) {
     pp_trends = {};  // preprocessing trends
@@ -75,62 +86,55 @@ function update(filename) {
 
     z.domain(trends.map(function(c) { return c.id; }));
 
-    // x_axis.call(d3.axisBottom(x));
+    x_axis.call(d3.axisBottom(x));
 
-    // g.append("g")
-    //     .attr("class", "axis axis--y")
-    //     .call(d3.axisLeft(y))
-    //   .append("text")
-    //     .attr("transform", "rotate(-90)")
-    //     .attr("y", 6)
-    //     .attr("dy", "0.71em")
-    //     .attr("fill", "#000")
-    //     .text("Trend");
+    y_axis.call(d3.axisLeft(y));
 
-    // // z axe
-    // var trend = g.selectAll(".trend")
-    //   .data(trends)
-    //   .enter().append("g")
-    //     .attr("class", "trend");
-    //
-    // trend.append("path")
-    //     .attr("class", "line")
-    //     .attr("d", function(d) { return line(d.values); })
-    //     .style("stroke", function(d) { return z(d.id); });
-    //
-    // trend.append("text")
-    //     .datum(function(d) { return {id: d.id, value: d.values[d.values.length - 1]}; })
-    //     .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.value) + ")"; })
-    //     .attr("x", 3)
-    //     .attr("dy", "0.35em")
-    //     .style("font", "10px sans-serif")
-    //     .text(function(d) { return d.id; });
-
-    // trend = g.selectAll("path")
     var trend = g.selectAll(".trend")
-      .data(trends, function(d) { return d.id; })
-      .enter().append("g")
-        .attr("class", "trend");
+      .data(trends, function(d) { return d.id; });
 
     trend.exit().remove();
 
-    trend.append("path")
-        // .attr("class", "trend")
-      // .merge(trend)
-          .attr("class", "line")
-          .attr("d", function(d) { return line(d.values); })
-          .style("stroke", function(d) { return z(d.id); });
+    trend = trend.enter()
+      .append('g')
+        .attr('class', 'trend')
+      .merge(trend);
 
-    trend.exit().remove();
+    var trend_line = trend.selectAll('.line')
+      .data(function(d) { return [d]; });
 
-    trend.append("text")
-        .datum(function(d) { return {id: d.id, value: d.values[d.values.length - 1]}; })
+    trend_line.exit().remove();
+
+    trend_line.enter()
+      .append('path')
+        .attr("class", "line")
+        .attr("d", function(d) { return line(d.values); })
+        .style("stroke", function(d) { return z(d.id); })
+      .merge(trend_line)
+        .attr("class", "line")
+        .attr("d", function(d) { return line(d.values); })
+        .style("stroke", function(d) { return z(d.id); });
+
+    var trend_text = trend.selectAll('.text')
+      .data(function(d) { return [{id: d.id, value: d.values[d.values.length - 1]}]; });
+
+    trend_text.exit().remove();
+
+    trend_text.enter()
+      .append('text')
+        .attr('class', 'text')
         .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.value) + ")"; })
         .attr("x", 3)
         .attr("dy", "0.35em")
-        .style("font", "10px sans-serif")
+        .style("font", "12px sans-serif")
+        .text(function(d) { return d.id; })
+      .merge(trend_text)
+        .attr('class', 'text')
+        .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.value) + ")"; })
+        .attr("x", 3)
+        .attr("dy", "0.35em")
+        .style("font", "12px sans-serif")
         .text(function(d) { return d.id; });
-
   });
 }
 
