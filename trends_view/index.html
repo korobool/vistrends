@@ -138,23 +138,10 @@ function update(filename) {
   });
 }
 
+setInterval(update_interval, 1000);
 
-update('test_data/example0.json');
-
-d3.timeout(function() {
-  update('test_data/example1.json');
-}, 1000);
-d3.timeout(function() {
-  update('test_data/example2.json');
-}, 2000);
-d3.timeout(function() {
-  update('test_data/example3.json');
-}, 3000);
-d3.timeout(function() {
-  update('test_data/example4.json');
-}, 4000);
-d3.timeout(function() {
-  update('test_data/example5.json');
-}, 5000);
+function update_interval() {
+  update(`http://82.193.115.141:11071/?time_min=${Math.floor((Date.now() - 86400000)/1000)}&time_max=${Math.floor(Date.now()/1000)}`);
+}
 
 </script>
