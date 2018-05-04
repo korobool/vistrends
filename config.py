@@ -5,5 +5,6 @@ config = {
     'threshold': 0.25,
     'tags': ['#news'],  # ['#socialmedia', '#BreakingNews', '#trending']
     'unique': 'no',
-    'entities_only': 'yes'
+    'entities_only': 'yes',
+    'log_path': 'log'
 }

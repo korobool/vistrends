@@ -6,7 +6,9 @@ import motor.motor_asyncio
 import time
 import re
 import asyncio
+import logging
 
+from os import path
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
@@ -22,6 +24,10 @@ access_token = secret['access_token']
 access_token_secret = secret['access_token_secret']
 consumer_key = secret['consumer_key']
 consumer_secret = secret['consumer_secret']
+
+logging.basicConfig(filename=path.join(config['log_path'], "puller.log"),
+                    level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 # This is a basic listener that just prints received tweets to stdout.
@@ -78,6 +84,7 @@ def run(db):
 
 
 if __name__ == '__main__':
+    logging.info('Puller started.')
     dbapi_string = config['db']
     client = motor.motor_asyncio.AsyncIOMotorClient(dbapi_string)
     db = client.analytics
@@ -85,4 +92,7 @@ if __name__ == '__main__':
     try:
         run(db)
     except:
+        logging.error('Pulling error!')
         pass
+
+    logging.info('Puller finished.\n')
