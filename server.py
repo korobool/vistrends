@@ -9,6 +9,8 @@ from PIL import Image
 from io import BytesIO
 from config import config
 
+import aiohttp_cors
+
 dbapi_string = config['db']
 port = config['serving_at']
 client = motor.motor_asyncio.AsyncIOMotorClient(dbapi_string)
@@ -23,7 +25,7 @@ async def handler(request):
     cursor = db.points.find({'time': {'$gt': val1, '$lt': val2}})
     for document in await cursor.to_list(length=50000):
         docs.append({'time': document['time'],
-                     'datapoins': document['datapoints'],
+                     'datapoints': document['datapoints'],
                      'img_path': document['img']})
     response.text = json.dumps(docs)
     return response
@@ -34,7 +36,7 @@ async def handler_single(request):
     response = web.Response(content_type='application/json')
     document = await db.points.find_one({'time': val})
     response.text = json.dumps({'time': document['time'],
-                                'datapoins': document['datapoints'],
+                                'datapoints': document['datapoints'],
                                 'img_path': document['img']})
     return response
 
@@ -60,9 +62,23 @@ async def init(loop):
 d = path.dirname(__file__)
 loop = asyncio.get_event_loop()
 app = web.Application()
-app.router.add_get('/', handler)
-app.router.add_get('/single', handler_single)
-app.router.add_get('/image', handler_image)
+cors = aiohttp_cors.setup(app)
+
+resource = cors.add(app.router.add_resource("/"))
+route = cors.add(
+    resource.add_route("GET", handler), {
+        "*": aiohttp_cors.ResourceOptions(
+            allow_credentials=True,
+            expose_headers=("X-Custom-Server-Header",),
+            allow_headers=("X-Requested-With", "Content-Type"),
+            max_age=3600,
+        )
+    })
+
+# TODO: wrap into cors all endpoints
+# app.router.add_get('/', handler)
+# app.router.add_get('/single', handler_single)
+# app.router.add_get('/image', handler_image)
 loop.run_until_complete(init(loop))
 
 if __name__ == '__main__':

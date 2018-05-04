@@ -105,3 +105,5 @@ ENV/
 key
 key.pem
 secret
+
+not_for_commit
