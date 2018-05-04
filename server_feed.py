@@ -5,9 +5,9 @@ import datetime
 import sys
 import motor.motor_asyncio
 
-if len(sys.argv) != 2:
-    print("You should pass db connection string as arg.")
-dbapi_string = sys.argv[1]
+from config import config
+
+dbapi_string = config['db']
 
 client = motor.motor_asyncio.AsyncIOMotorClient(dbapi_string)
 db = client['test_database']
