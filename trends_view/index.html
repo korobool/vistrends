@@ -9,7 +9,7 @@
 .line {
   fill: none;
   stroke: steelblue;
-  stroke-width: 8px;
+  stroke-width: 1.5px;
 }
 
 </style>
@@ -41,6 +41,7 @@ var trend;
 var pp_trends = {};  // preprocessing trends
 var dates = [];
 var trends = [];
+var sorted_trends = {};
 
 var x_axis = g.append("g")
   .attr("class", "axis axis--x")
@@ -49,13 +50,13 @@ var x_axis = g.append("g")
 var y_axis = g.append("g")
     .attr("class", "axis axis--y");
 
-y_axis.append("text")
-  .attr("transform", "rotate(-90)")
-  .attr("y", 6)
-  .attr("dy", "0.71em")
-  .attr("fill", "#000")
-  .style('font-size', '12px')
-  .text("Trend");
+// y_axis.append("text")
+//   .attr("transform", "rotate(-90)")
+//   .attr("y", 6)
+//   .attr("dy", "0.71em")
+//   .attr("fill", "#000")
+//   .style('font-size', '12px')
+//   .text("Trend");
 
 function update(filename) {
   d3.json(filename).then(function(data) {
@@ -90,6 +91,15 @@ function update(filename) {
 
     y_axis.call(d3.axisLeft(y));
 
+    // update sorted_trends
+    var sortable = [];
+    trends.forEach(function(d) {
+      sortable.push({id: d.id, value: d.values[d.values.length - 1].value});
+    });
+    sortable.sort(function(a, b) { return b.value - a.value; });
+    sortable.forEach(function(d, i) { sorted_trends[d.id] = i; });
+
+    // trend group
     var trend = g.selectAll(".trend")
       .data(trends, function(d) { return d.id; });
 
@@ -100,6 +110,7 @@ function update(filename) {
         .attr('class', 'trend')
       .merge(trend);
 
+    // line
     var trend_line = trend.selectAll('.line')
       .data(function(d) { return [d]; });
 
@@ -115,30 +126,47 @@ function update(filename) {
         .attr("d", function(d) { return line(d.values); })
         .style("stroke", function(d) { return z(d.id); });
 
+    // trend line text label
     var trend_text = trend.selectAll('.text')
-      .data(function(d) { return [{id: d.id, value: d.values[d.values.length - 1]}]; });
+      .data(function(d) {
+        return [
+          {
+            id: d.id,
+            value: d.values[d.values.length - 1],
+            index: sorted_trends[d.id],
+          }];
+      });
 
     trend_text.exit().remove();
 
     trend_text.enter()
       .append('text')
         .attr('class', 'text')
-        .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.value) + ")"; })
+        // .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.value) + ")"; })
+        .attr("transform", function(d) { return "translate(" + 830 + "," + d.index * 12 + ")"; })
         .attr("x", 3)
         .attr("dy", "0.35em")
         .style("font", "12px sans-serif")
-        .text(function(d) { return d.id; })
+        .text(function(d) { return '-' + d.id; })
       .merge(trend_text)
         .attr('class', 'text')
-        .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.value) + ")"; })
+        .attr("transform", function(d) { return "translate(" + 830 + "," + d.index * 12 + ")"; })
         .attr("x", 3)
         .attr("dy", "0.35em")
         .style("font", "12px sans-serif")
-        .text(function(d) { return d.id; });
+        .text(function(d) { return '-' + d.id; })
+        .on('mouseover', function(d) {
+          d3.select(this.parentElement.parentElement).selectAll('.line').style('stroke-opacity', '0.5');
+          d3.select(this.parentElement).select('.line')
+          .style('stroke-width', '8px')
+          .style('stroke-opacity', '1');
+        })
+        .on('mouseout', function(d) {
+          d3.select(this.parentElement).select('.line').style('stroke-width', '1.5px');
+          d3.select(this.parentElement.parentElement).selectAll('.line').style('stroke-opacity', '1');
+        });
   });
 }
-
-setInterval(update_interval, 1000);
 
 function update_interval() {
   update(`http://82.193.115.141:11071/?time_min=${Math.floor((Date.now() - 86400000)/1000)}&time_max=${Math.floor(Date.now()/1000)}`);
