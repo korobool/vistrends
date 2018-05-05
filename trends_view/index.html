@@ -168,6 +168,8 @@ function update(filename) {
   });
 }
 
+setInterval(update_interval, 1000);
+
 function update_interval() {
   update(`http://82.193.115.141:11071/?time_min=${Math.floor((Date.now() - 86400000)/1000)}&time_max=${Math.floor(Date.now()/1000)}`);
 }
