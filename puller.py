@@ -1,18 +1,13 @@
-import aiohttp
 import json
-import datetime
-import sys
+import logging
+import re
+from os import path
+
 import motor.motor_asyncio
 import time
-import re
-import asyncio
-import logging
-
-from os import path
-from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
-from datetime import datetime
+from tweepy.streaming import StreamListener
 
 from config import config
 

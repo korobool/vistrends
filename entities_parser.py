@@ -84,7 +84,6 @@ def get_ner_chunks(text):
 
 
 def get_entities(text):
-
     result = []
     ne = get_ner_chunks(text)
     np = get_noun_phrases(text)
@@ -97,9 +96,25 @@ def get_entities(text):
 
     return result
 
+
 def get_joined_entities(text):
     entities = get_entities(text)
     return [item.replace(' ', '_') for item in entities]
+
+
+def ngram_chunk(text, bigram=True, trigram=False):
+    result = []
+    tokens = text.split()
+    if bigram:
+        for i, word in enumerate(tokens):
+            if i < len(tokens) - 2:
+                result.append('_'.join(tokens[i:i + 2]))
+    if trigram:
+        for i, word in enumerate(tokens):
+            if i < len(tokens) - 3:
+                result.append('_'.join(tokens[i:i + 3]))
+
+    return ' '.join(result)
 
 
 if __name__ == "__main__":

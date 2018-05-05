@@ -13,7 +13,7 @@ from PIL import Image
 from wordcloud import WordCloud, STOPWORDS
 
 from config import config
-from entities_parser import get_joined_entities, get_entities
+from entities_parser import get_joined_entities, get_entities, ngram_chunk
 
 dbapi_string = config['db']
 client = motor.motor_asyncio.AsyncIOMotorClient(dbapi_string)
@@ -69,11 +69,17 @@ if __name__ == '__main__':
     if config['unique'] == 'yes':
         filtered_unique = list(set(filtered))
         filtered = filtered_unique
-    if config['entities_only'] == 'yes':
+    if config['entities'] == 'simple':
         entities_only = [' '.join(get_entities(item)) for item in filtered]
+        filtered = entities_only  # [entity for entity in entities_only if len(entity.split()) > 1]
+    if config['entities'] == 'chunked':
+        entities_only = [ngram_chunk(' '.join(get_entities(item))) for item in filtered]
         filtered = entities_only
-    # print(filtered)
+
+    # chuncs = [ngram_chunk(item) for item in filtered]
+
     full_text = ' '.join(filtered)
+
     text = full_text
 
 
