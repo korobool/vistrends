@@ -10,7 +10,7 @@ mkvirtualenv -p python3.6 analytics
 #### requirements
 ```terminal
 pip install -r requirements.txt
-sudo apt-get install python3-tk
+sudo apt-get install python3-tk # This can also be something like sudo apt-get install python3.6-tk
 python -m nltk.downloader all
 sudo pip2 install supervisor
 ```
