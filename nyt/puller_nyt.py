@@ -1,12 +1,22 @@
+import re
 import sys
 import time
 import pandas as pd
 import requests
+import motor.motor_asyncio
+import logging
+import datetime
 
 from bs4 import BeautifulSoup
+from os import path
 from nytimesarticle import articleAPI
 
+from config_nyt import config
+
 api = articleAPI('769651a3298d495aa80e97ea8fae03b2')
+logging.basicConfig(filename=path.join(config['log_path'], "puller_nyt.log"),
+                    level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def parse_articles(articles):
@@ -16,6 +26,7 @@ def parse_articles(articles):
         dic['date'] = i['pub_date'][0:10]  # cutting time of day.
         dic['atype'] = i['type_of_material']
         dic['url'] = i['web_url']
+        dic['headline'] = i['headline']['main']
         dic['word_count'] = int(i['word_count'])
         news.append(dic)
     return news
@@ -81,7 +92,7 @@ def scarp_articles_text(articles_df):
         # Articles through 1986 are found under different p tag
         paragraph_tags = soup.find_all('p', class_='story-body-text story-content')
         if paragraph_tags == []:
-            paragraph_tags = soup.find_all('p', itemprop='articleBody')
+            paragraph_tags = soup.find_all('p', class_=re.compile("css"))
 
         # Put together all text from HTML p tags
         article = ''
@@ -94,8 +105,39 @@ def scarp_articles_text(articles_df):
     return articles_df
 
 if __name__ == '__main__':
-    val1 = str(sys.argv[1])
-    val2 = str(sys.argv[2])
+    now = datetime.datetime.now()
+    yesterday = now - datetime.timedelta(days=1)
+
+    previous_date = yesterday.strftime("%Y%m%d")
+    current_date = now.strftime("%Y%m%d")
+
+    if len(sys.argv) == 3:
+        try:
+            val1 = str(sys.argv[1])
+            val2 = str(sys.argv[2])
+            val2 = datetime.datetime.strptime(val2, "%Y%m%d") + datetime.timedelta(days=1)
+            val2 = val2.strftime("%Y%m%d")
+        except TypeError:
+            val1 = previous_date
+            val2 = current_date
+    else:
+        val1 = previous_date
+        val2 = current_date
+
+
+    logging.info('Puller NYT started.')
+    dbapi_string = config['db']
+    client = motor.motor_asyncio.AsyncIOMotorClient(dbapi_string)
+    db = client.analytics
     articles_frame = get_articles_url(val1, val2)
     articles_frame = scarp_articles_text(articles_frame)
     articles_frame.to_csv('articles.csv', encoding='utf-8')
+
+    for j in range(0, len(articles_frame)):
+        data = {'headline': articles_frame['headline'][j],
+                'url': articles_frame['url'][j],
+                'word_count': int(articles_frame['word_count'][j]),
+                'date': articles_frame['date'][j],
+                'article_text': articles_frame['article_text'][j]}
+        db.all_nyt.insert_one(data)
+    logging.info('Puller NYT finished.\n')

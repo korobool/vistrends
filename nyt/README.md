@@ -23,9 +23,21 @@ pip install lxml
 pip install bs4
 ```
 
-6. Run script for writing articles to articles.csv (YYYYMMDD)
+6. Use analytics db and create collection "all_nyt".
+```terminal
+mongo -u admin -p admin123 --authenticationDatabase admin
+use analytics
+db.createCollection("all_nyt")
+```
+
+7. Run script for writing articles into database and articles.csv from 20180428 (YYYYMMDD) to 20180503 (YYYYMMDD)
 ```python
-python puller2.py 20180501 20180505
+python puller_nyt.py 20180428 20180503
+```
+
+8. Run script for writing yesterday articles into database and articles.csv
+```python
+python puller_nyt.py
 ```
 
 Usefull links:
