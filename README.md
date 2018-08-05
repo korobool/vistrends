@@ -2,7 +2,7 @@
 Is a simple visualizer of what entities are discussed in Twitter for a certain historical period. Under development.
 
 #### TODO:
-1. Change np extractor to simple_np
+1. Change np extractor to [simple_np](https://github.com/korobool/simple_np)
 2. Use forest of NER
 
 #### Prarpare a vitrualenv
