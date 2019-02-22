@@ -1,24 +1,24 @@
 import json
 import logging
 import re
-from os import path
-
 import motor.motor_asyncio
 import time
+
+from os import path
+from os import environ
 from tweepy import OAuthHandler
 from tweepy import Stream
 from tweepy.streaming import StreamListener
-
 from config import config
 
 # Variables that contains the user credentials to access Twitter API
-with open('secret') as f:
-    secret = json.loads(f.read())
+# with open('secret') as f:
+#     secret = json.loads(f.read())
 
-access_token = secret['access_token']
-access_token_secret = secret['access_token_secret']
-consumer_key = secret['consumer_key']
-consumer_secret = secret['consumer_secret']
+access_token = environ['ACCESS_TOKEN']
+access_token_secret = environ['ACCESS_TOKEN_SECRET']
+consumer_key = environ['CONSUMER_KEY']
+consumer_secret = environ['CONSUMER_SECRET']
 
 logging.basicConfig(filename=path.join(config['log_path'], "puller.log"),
                     level=logging.INFO,
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     logging.info('Puller started.')
     dbapi_string = config['db']
     client = motor.motor_asyncio.AsyncIOMotorClient(dbapi_string)
-    db = client.analytics
+    db = client.tweets
 
     try:
         run(db)

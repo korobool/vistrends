@@ -1,0 +1,33 @@
+version: "2"
+services:
+  mongo:
+    image: mongo
+    container_name: mongo
+    restart: always
+    ports:
+    - "27017:27017"
+  mongo_client_temp:
+    image: mongo
+    container_name: mongo_client_temp
+    links:
+    - mongo:mongo
+    command: mongo --host mongo --eval  "db.getSiblingDB('tweets').createUser({user:'admin', pwd:'admin123', roles:[{role:'readWrite',db:'tweets'}]}); db.getSiblingDB('tweets').createCollection('all_tweets'); db.getSiblingDB('tweets').all_tweets.createIndex({'created_at':1}); db.getSiblingDB('tweets').createCollection('points');"
+    depends_on:
+    - mongo
+  vt:
+    image: vt
+    container_name: vt
+    ports:
+    - "11071:11071"
+    - "8000:8000"
+    environment:
+    - MONGODB_HOST=mongo
+    - MONGODB_PORT=27017
+    - ACCESS_TOKEN=${ACCESS_TOKEN}
+    - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
+    - CONSUMER_KEY=${CONSUMER_KEY}
+    - CONSUMER_SECRET=${CONSUMER_SECRET}
+    links:
+    - mongo:mongo
+    depends_on:
+    - mongo_client_temp

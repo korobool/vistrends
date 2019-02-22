@@ -1,99 +1,26 @@
-## vistrends
-Is a simple visualizer of what entities are discussed in Twitter for a certain historical period. Under development.
+## 1. Put your credentials into the .env file.
 
-#### TODO:
-1. Change np extractor to [simple_np](https://github.com/korobool/simple_np)
-2. Use forest of NER
+ACCESS_TOKEN=...
+CONSUMER_KEY=...
+CONSUMER_SECRET=...
+ACCESS_TOKEN_SECRET=...
 
-#### Prarpare a vitrualenv
-Create virtual environment and install all requirements.
+## 2. Create the vt image.
 ```terminal
-mkvirtualenv -p python3.6 analytics
+docker build -t vt ./vistrends/
 ```
 
-#### requirements
+## 3. Run docker compose with docker-compose.yml.
 ```terminal
-pip install -r requirements.txt
-sudo apt-get install python3-tk # This can also be something like sudo apt-get install python3.6-tk
-python -m nltk.downloader all
-sudo pip2 install supervisor
+docker-compose up
 ```
 
-#### MongoDB 
-Install MongoDB on Ubuntu 16.04 (Step1-Step4)
-https://www.howtoforge.com/tutorial/install-mongodb-on-ubuntu-16.04/
-
-Create root user.
+## 4. You can have an access to the dynamic of data obtaining.
 ```terminal
-mongo
-use admin
-db.createUser({user:"admin", pwd:"admin123", roles:[{role:"root", db:"admin"}]})
+http://localhost:8000/
 ```
 
-#### Database Config
-
-Create analytics db and create collection "all_tweets" with index "created_at".
-use analytics
+### 5. You can see an image from database (image file must exist).
 ```terminal
-db.createCollection("all_tweets")
-db.all_tweets.createIndex( { "created_at": 1 } )
-```
-
-Create collection "points".
-```terminal
-db.createCollection("points")
-```
-
-How to enter to mongodb as root?
-```terminal
-mongo -u admin -p admin123 --authenticationDatabase admin
-use analytics
-```
-Create directory 'img' for images.
-
-#### Run software
-##### To run altogether:
-```
-make start
-```
-you can stop everything with 
-```
-make stop
-```
-or check the status/control by
-```
-make ctl
-```
-
-##### To run software separately:
-* Run puller forever.
-```terminal
-python puller.py
-```
-
-* Run extractor once per some time period (for example, hour) by cron.
-```terminal
-python extractor.py
-```
-
-* Run server forever.
-```terminal
-python server.py
-```
-
-#### CURL Examples
-
-One element from bd.
-```terminal
-curl "http://localhost:11071/single?time=1524698967" | grep }| python -mjson.tool
-```
-
-Elements for some period.
-```terminal
-curl "http://localhost:11071?time_min=1524660000&time_max=1524700000" | grep }| python -mjson.tool
-```
-
-Get image by file name.
-```terminal
-curl "http://localhost:11071/image?img=17:20:51_25.04.2018.png"
+http://localhost:11071/image?img=17:49:36_22.02.2019.png
 ```
