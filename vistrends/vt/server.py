@@ -16,7 +16,7 @@ import aiohttp_cors
 dbapi_string = config['db']
 port = config['serving_at']
 client = motor.motor_asyncio.AsyncIOMotorClient(dbapi_string)
-db = client.analytics
+db = client.tweets
 
 logging.basicConfig(filename=path.join(config['log_path'], "server.log"),
                     level=logging.INFO,
@@ -86,9 +86,9 @@ route = cors.add(
     })
 
 # TODO: wrap into cors all endpoints
-# app.router.add_get('/', handler)
-# app.router.add_get('/single', handler_single)
-# app.router.add_get('/image', handler_image)
+app.router.add_get('/', handler)
+app.router.add_get('/single', handler_single)
+app.router.add_get('/image', handler_image)
 loop.run_until_complete(init(loop))
 
 if __name__ == '__main__':

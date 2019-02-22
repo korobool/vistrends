@@ -17,7 +17,7 @@ from entities_parser import get_joined_entities, get_entities, ngram_chunk
 
 dbapi_string = config['db']
 client = motor.motor_asyncio.AsyncIOMotorClient(dbapi_string)
-db = client.analytics
+db = client.tweets
 stopwords = set(STOPWORDS)
 stopwords.update(['fake', 'much', 'good', 'great', 'will', 'should', 'amp', 'now', 'say', 'says', 'said',
                   'new', 'day', 'one', 'well', 'want', 'us', 'today', 'via', 'year', 'need', 'read',
